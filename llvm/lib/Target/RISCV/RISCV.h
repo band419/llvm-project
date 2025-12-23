@@ -132,6 +132,13 @@ void initializeRISCVVLOptimizerPass(PassRegistry &);
 FunctionPass *createRISCVVMV0EliminationPass();
 void initializeRISCVVMV0EliminationPass(PassRegistry &);
 
+// Custom SIMT passes
+FunctionPass *createRISCVExpandSIMTPseudoPass();
+void initializeRISCVExpandSIMTPseudoPass(PassRegistry &);
+
+FunctionPass *createRISCVInsertLMaskPushPass();
+void initializeRISCVInsertLMaskPushPass(PassRegistry &);
+
 void initializeRISCVAsmPrinterPass(PassRegistry &);
 } // namespace llvm
 

@@ -1965,3 +1965,6 @@ include "llvm/IR/IntrinsicsRISCVXsf.td"
 include "llvm/IR/IntrinsicsRISCVXCV.td"
 include "llvm/IR/IntrinsicsRISCVXAndes.td"
 include "llvm/IR/IntrinsicsRISCVXMIPS.td"
+
+// Note: Custom SIMT intrinsics are included in llvm/IR/Intrinsics.td
+// They use TargetPrefix = "custom" (not "riscv") and are target-independent.

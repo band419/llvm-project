@@ -633,6 +633,30 @@ void RISCVInstrInfo::copyPhysReg(MachineBasicBlock &MBB,
     return;
   }
 
+  // SIMT Predicate register copies (PR->PR, PR->GPR, GPR->PR)
+  if (RISCV::PRRegClass.contains(DstReg, SrcReg)) {
+    // PR->PR copy: use SIMT_PMOV pseudo
+    BuildMI(MBB, MBBI, DL, get(RISCV::SIMT_PMOV), DstReg)
+        .addReg(SrcReg, KillFlag);
+    return;
+  }
+
+  if (RISCV::GPRRegClass.contains(DstReg) &&
+      RISCV::PRRegClass.contains(SrcReg)) {
+    // PR->GPR: use SIMT_PMOV_TO_X pseudo
+    BuildMI(MBB, MBBI, DL, get(RISCV::SIMT_PMOV_TO_X), DstReg)
+        .addReg(SrcReg, KillFlag);
+    return;
+  }
+
+  if (RISCV::PRRegClass.contains(DstReg) &&
+      RISCV::GPRRegClass.contains(SrcReg)) {
+    // GPR->PR: use SIMT_PMOV_FROM_X pseudo
+    BuildMI(MBB, MBBI, DL, get(RISCV::SIMT_PMOV_FROM_X), DstReg)
+        .addReg(SrcReg, KillFlag);
+    return;
+  }
+
   // VR->VR copies.
   const TargetRegisterClass *RegClass =
       TRI->getCommonMinimalPhysRegClass(SrcReg, DstReg);
@@ -699,6 +723,8 @@ void RISCVInstrInfo::storeRegToStackSlot(MachineBasicBlock &MBB,
     Opcode = RISCV::PseudoVSPILL7_M1;
   else if (RISCV::VRN8M1RegClass.hasSubClassEq(RC))
     Opcode = RISCV::PseudoVSPILL8_M1;
+  else if (RISCV::PRRegClass.hasSubClassEq(RC))
+    Opcode = RISCV::PseudoPRSpill;
   else
     llvm_unreachable("Can't store this register to stack slot");
 
@@ -785,6 +811,8 @@ void RISCVInstrInfo::loadRegFromStackSlot(MachineBasicBlock &MBB,
     Opcode = RISCV::PseudoVRELOAD7_M1;
   else if (RISCV::VRN8M1RegClass.hasSubClassEq(RC))
     Opcode = RISCV::PseudoVRELOAD8_M1;
+  else if (RISCV::PRRegClass.hasSubClassEq(RC))
+    Opcode = RISCV::PseudoPRReload;
   else
     llvm_unreachable("Can't load this register from stack slot");
 

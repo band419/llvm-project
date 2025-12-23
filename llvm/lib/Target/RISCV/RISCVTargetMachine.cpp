@@ -146,6 +146,8 @@ extern "C" LLVM_ABI LLVM_EXTERNAL_VISIBILITY void LLVMInitializeRISCVTarget() {
   initializeRISCVRedundantCopyEliminationPass(*PR);
   initializeRISCVAsmPrinterPass(*PR);
   initializeRISCVPromoteConstantPass(*PR);
+  initializeRISCVExpandSIMTPseudoPass(*PR);
+  initializeRISCVInsertLMaskPushPass(*PR);
 }
 
 static Reloc::Model getEffectiveRelocModel(std::optional<Reloc::Model> RM) {
@@ -575,6 +577,9 @@ void RISCVPassConfig::addPreEmitPass2() {
   }
   addPass(createRISCVExpandPseudoPass());
 
+  // Expand SIMT pseudo instructions (CSR reads, barriers, etc.)
+  addPass(createRISCVExpandSIMTPseudoPass());
+
   // Schedule the expansion of AMOs at the last possible moment, avoiding the
   // possibility for other passes to break the requirements for forward
   // progress in the LR/SC block.
@@ -617,6 +622,9 @@ void RISCVPassConfig::addPreRegAlloc() {
     addPass(&MachinePipelinerID);
 
   addPass(createRISCVVMV0EliminationPass());
+
+  // Insert LMASK.PUSH for SIMT divergence handling
+  addPass(createRISCVInsertLMaskPushPass());
 }
 
 void RISCVPassConfig::addFastRegAlloc() {

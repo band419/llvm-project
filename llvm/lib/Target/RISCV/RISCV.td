@@ -34,6 +34,7 @@ include "RISCVRegisterInfo.td"
 include "RISCVSchedule.td"
 include "RISCVCallingConv.td"
 include "RISCVInstrInfo.td"
+include "RISCVInstrInfoSIMT.td"
 include "GISel/RISCVRegisterBanks.td"
 
 //===----------------------------------------------------------------------===//

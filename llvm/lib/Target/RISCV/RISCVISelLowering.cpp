@@ -152,6 +152,10 @@ RISCVTargetLowering::RISCVTargetLowering(const TargetMachine &TM,
       addRegisterClass(MVT::f64, &RISCV::GPRPairRegClass);
   }
 
+  // SIMT Predicate registers - independent i1 register class
+  if (Subtarget.hasVendorXCustomSIMT())
+    addRegisterClass(MVT::i1, &RISCV::PRRegClass);
+
   static const MVT::SimpleValueType BoolVecVTs[] = {
       MVT::nxv1i1,  MVT::nxv2i1,  MVT::nxv4i1, MVT::nxv8i1,
       MVT::nxv16i1, MVT::nxv32i1, MVT::nxv64i1};
@@ -301,6 +305,17 @@ RISCVTargetLowering::RISCVTargetLowering(const TargetMachine &TM,
   computeRegisterProperties(STI.getRegisterInfo());
 
   setStackPointerRegisterToSaveRestore(RISCV::X2);
+
+  // SIMT Predicate register operations
+  if (Subtarget.hasVendorXCustomSIMT()) {
+    // Enable legal operations on i1 type for predicate registers
+    setOperationAction({ISD::AND, ISD::OR, ISD::XOR}, MVT::i1, Legal);
+    // Select uses predicates for condition
+    setOperationAction(ISD::SELECT, MVT::i1, Legal);
+    // Copy is handled via custom copyPhysReg
+    setOperationAction(ISD::CopyToReg, MVT::i1, Legal);
+    setOperationAction(ISD::CopyFromReg, MVT::i1, Legal);
+  }
 
   setLoadExtAction({ISD::EXTLOAD, ISD::SEXTLOAD, ISD::ZEXTLOAD}, XLenVT,
                    MVT::i1, Promote);

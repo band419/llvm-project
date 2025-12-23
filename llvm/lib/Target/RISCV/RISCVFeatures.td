@@ -1139,6 +1139,20 @@ def HasStdExtZbbOrZbkbOrP
                          "'Base P' (Packed-SIMD)">;
 
 //===----------------------------------------------------------------------===//
+// Custom SIMT Extension
+//===----------------------------------------------------------------------===//
+
+// Custom SIMT Vector Core extension for GPU-like SIMT execution model.
+// Provides thread/block ID CSRs, warp-level operations, and CTA barriers.
+// Reference: docs/custom-riscv-llvm-backend-implementation-plan.md
+
+def FeatureVendorXCustomSIMT
+    : RISCVExtension<1, 0, "Custom SIMT Vector Core Extension">;
+def HasVendorXCustomSIMT : Predicate<"Subtarget->hasVendorXCustomSIMT()">,
+                           AssemblerPredicate<(all_of FeatureVendorXCustomSIMT),
+                               "'XCustomSIMT' (Custom SIMT Vector Core Extension)">;
+
+//===----------------------------------------------------------------------===//
 // Vendor extensions
 //===----------------------------------------------------------------------===//
 
